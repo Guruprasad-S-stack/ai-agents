@@ -70,7 +70,7 @@ Before installing Beifong, ensure you have:
 
 ```bash
 # Navigate to the project directory
-cd advanced_ai_agents/multi_agent_apps/news_podcast_generator/backend
+cd news_podcast_generator/backend
 
 # Create virtual environment
 python -m venv venv

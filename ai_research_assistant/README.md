@@ -11,7 +11,7 @@ This Streamlit app empowers you to research top stories and users on HackerNews 
 1. Navigate to the project directory
 
 ```bash
-cd advanced_ai_agents/multi_agent_apps/ai_research_assistant
+cd ai_research_assistant
 ```
 2. Install the required dependencies:
 

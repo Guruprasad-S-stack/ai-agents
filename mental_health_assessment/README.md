@@ -37,7 +37,7 @@ Follow these steps to set up and run the application:
 
 1. **Navigate to the Project Directory**:
    ```bash
-   cd advanced_ai_agents/multi_agent_apps/mental_health_assessment
+   cd mental_health_assessment
    ```
 
 2. **Install Dependencies**:

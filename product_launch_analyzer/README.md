@@ -36,7 +36,7 @@ Additional goodies:
 1. **Navigate to the project directory**
 
 ```bash
-cd advanced_ai_agents/multi_agent_apps/product_launch_analyzer
+cd product_launch_analyzer
 ```
 
 2. **Install** dependencies

@@ -47,7 +47,7 @@ Follow the steps below to set up and run the application:
 
 2. **Navigate to the Project Directory**:
    ```bash
-   cd advanced_ai_agents/multi_agent_apps/financial_coach
+   cd financial_coach
    ```
 
 3. **Install Dependencies**:
