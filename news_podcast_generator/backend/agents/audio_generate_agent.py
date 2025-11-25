@@ -6,6 +6,7 @@ import numpy as np
 import soundfile as sf
 from typing import Any, Dict, List, Optional, Tuple
 from utils.load_api_keys import load_api_key
+from utils.text_to_audio_elevenslab import create_podcast as create_podcast_elevenlabs
 from openai import OpenAI
 from scipy import signal
 
@@ -15,6 +16,7 @@ PODCAST_AUDIO_FOLDER = os.path.join(PODCASTS_FOLDER, "audio")
 PODCAST_MUSIC_FOLDER = os.path.join('static', "musics")
 OPENAI_VOICES = {1: "alloy", 2: "echo", 3: "fable", 4: "onyx", 5: "nova", 6: "shimmer"}
 DEFAULT_VOICE_MAP = {1: "alloy", 2: "nova"}
+ELEVENLABS_VOICE_MAP = {1: "Rachel", 2: "Adam"}
 TTS_MODEL = "gpt-4o-mini-tts"
 INTRO_MUSIC_FILE = os.path.join(PODCAST_MUSIC_FOLDER, "intro_audio.mp3")
 OUTRO_MUSIC_FILE = os.path.join(PODCAST_MUSIC_FOLDER, "intro_audio.mp3")
@@ -326,18 +328,42 @@ def audio_generate_agent_run(agent: Agent) -> str:
             selected_language = session_state.get("selected_language", {"code": "en", "name": "English"})
             language_code = selected_language.get("code", "en")
             language_name = selected_language.get("name", "English")
-            tts_engine = "openai"
-            if tts_engine == "openai" and not load_api_key("OPENAI_API_KEY"):
+
+            preferred_engine = session_state.get("tts_engine")
+            elevenlabs_api_key = load_api_key("ELEVENLABS_API_KEY")
+            openai_api_key = load_api_key("OPENAI_API_KEY")
+            if preferred_engine:
+                tts_engine = preferred_engine.lower()
+            elif elevenlabs_api_key:
+                tts_engine = "elevenlabs"
+            else:
+                tts_engine = "openai"
+
+            if tts_engine == "elevenlabs" and not elevenlabs_api_key:
+                print("ELEVENLABS_API_KEY not found. Falling back to OpenAI TTS.")
+                tts_engine = "openai"
+
+            if tts_engine == "openai" and not openai_api_key:
                 error_msg = "Cannot generate audio: OpenAI API key not found."
                 print(error_msg)
                 return error_msg
+
             print(f"Generating podcast audio using {tts_engine} TTS engine in {language_name} language")
-            full_audio_path = create_podcast(
-                script=script_entries,
-                output_path=audio_path,
-                tts_engine=tts_engine,
-                language_code=language_code,
-            )
+            if tts_engine == "elevenlabs":
+                full_audio_path = create_podcast_elevenlabs(
+                    script=script_entries,
+                    output_path=audio_path,
+                    language_code=language_code,
+                    voice_map=ELEVENLABS_VOICE_MAP,
+                    api_key=elevenlabs_api_key,
+                )
+            else:
+                full_audio_path = create_podcast(
+                    script=script_entries,
+                    output_path=audio_path,
+                    tts_engine="openai",
+                    language_code=language_code,
+                )
             if not full_audio_path:
                 error_msg = f"Failed to generate podcast audio with {tts_engine} TTS engine."
                 print(error_msg)

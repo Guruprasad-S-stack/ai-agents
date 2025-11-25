@@ -9,10 +9,10 @@ from redis.asyncio import ConnectionPool, Redis
 from db.config import get_agent_session_db_path
 from db.agent_config_v2 import PODCAST_DIR, PODCAST_AUIDO_DIR, PODCAST_IMG_DIR, PODCAST_RECORDINGS_DIR, AVAILABLE_LANGS
 from services.celery_tasks import agent_chat
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from services.internal_session_service import SessionService
 
-load_dotenv()
+load_backend_env()
 
 
 class PodcastAgentService:

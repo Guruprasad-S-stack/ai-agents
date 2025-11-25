@@ -1,9 +1,7 @@
 import os
-from pathlib import Path
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 
-env_path = Path(".") / ".env"
-load_dotenv(dotenv_path=env_path)
+load_backend_env()
 DEFAULT_DB_PATHS = {
     "sources_db": "databases/sources.db",
     "tracking_db": "databases/feed_tracking.db",

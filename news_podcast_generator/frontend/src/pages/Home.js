@@ -66,7 +66,7 @@ const Home = () => {
                   showWelcome ? 'opacity-100' : 'opacity-0'
                }`}
             >
-               Welcome to Beifong's: Your Junk-Free, Personalized Informations and Podcasts.
+               Welcome to PodcastAgent: Your Junk-Free, Personalized Informations and Podcasts.
             </div>
          </div>
          <div className="bg-gradient-to-br from-gray-800 to-gray-900 shadow-lg rounded-sm relative overflow-hidden">

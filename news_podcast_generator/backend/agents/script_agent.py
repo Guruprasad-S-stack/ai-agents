@@ -1,12 +1,13 @@
+import os
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from agno.models.google import Gemini
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from textwrap import dedent
 from datetime import datetime
 
-load_dotenv()
+load_backend_env()
 
 
 class Dialog(BaseModel):
@@ -112,7 +113,7 @@ def podcast_script_agent_run(
         return "No confirmed sources found to generate podcast script."
 
     podcast_script_agent = Agent(
-        model=OpenAIChat(id="gpt-4o-mini"),
+        model=Gemini(id="gemini-2.5-pro", api_key=os.getenv("GOOGLE_API_KEY")),
         instructions=PODCAST_AGENT_INSTRUCTIONS,
         description=PODCAST_AGENT_DESCRIPTION,
         use_json_mode=True,

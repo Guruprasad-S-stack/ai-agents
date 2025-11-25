@@ -3,7 +3,7 @@ import uuid
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from agno.tools.duckduckgo import DuckDuckGoTools
 from textwrap import dedent
 from tools.wikipedia_search import wikipedia_search
@@ -13,7 +13,7 @@ from tools.embedding_search import embedding_search
 from tools.social_media_search import social_media_search, social_media_trending_search
 
 
-load_dotenv()
+load_backend_env()
 
 
 class ReturnItem(BaseModel):

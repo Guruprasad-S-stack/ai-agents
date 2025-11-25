@@ -4,11 +4,11 @@ from enum import Enum
 from textwrap import dedent
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 import uuid
 
 
-load_dotenv()
+load_backend_env()
 
 
 class SentimentType(str, Enum):

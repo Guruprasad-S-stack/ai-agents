@@ -1,10 +1,10 @@
 from langchain_openai import ChatOpenAI
 from browser_use import Agent
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 import asyncio
 
 
-load_dotenv()
+load_backend_env()
 llm = ChatOpenAI(model="gpt-4o")
 
 

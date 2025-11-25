@@ -2,12 +2,12 @@ from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from textwrap import dedent
 from datetime import datetime
 import uuid
 
-load_dotenv()
+load_backend_env()
 
 
 class Dialog(BaseModel):

@@ -7,12 +7,12 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from typing import Dict, List
 from datetime import datetime
 from db.config import get_slack_sessions_db_path
 
-load_dotenv()
+load_backend_env()
 
 app = App(token=os.environ["SLACK_BOT_TOKEN"])
 # local url works but banner images won't work in slack unless it's https with proper domain

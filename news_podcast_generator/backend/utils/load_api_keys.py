@@ -1,9 +1,8 @@
 import os
-from pathlib import Path
-from dotenv import load_dotenv
+
+from utils.env_loader import load_backend_env
 
 
-def load_api_key(key_name="OPENAI_API_KEY"):
-    env_path = Path(".") / ".env"
-    load_dotenv(dotenv_path=env_path)
+def load_api_key(key_name: str = "OPENAI_API_KEY"):
+    load_backend_env()
     return os.environ.get(key_name)

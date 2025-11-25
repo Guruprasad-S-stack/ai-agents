@@ -1,6 +1,6 @@
-# 🦉 Beifong: Your Junk-Free, Personalized Information and Podcasts
+#PodcastAgent: Your Junk-Free, Personalized Information and Podcasts
 
-Beifong manages your trusted articles and social media platform sources. It generates podcasts from the content you trust and curate. It handles the complete pipeline, from data collection and analysis to the production of scripts and visuals.
+PodcastAgent manages your trusted articles and social media platform sources. It generates podcasts from the content you trust and curate. It handles the complete pipeline, from data collection and analysis to the production of scripts and visuals.
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ Beifong manages your trusted articles and social media platform sources. It gene
   - [Initial Setup and Installation](#initial-setup-and-installation)
   - [Environment Configuration](#environment-configuration)
   - [Starting the Application](#starting-the-application)
-- [How to Use Beifong](#how-to-use-beifong)
+- [How to Use PodcastAgent](#how-to-use-podcastagent)
   - [Three Usage Methods](#three-usage-methods)
 - [Content Processing System](#content-processing-system)
   - [Built-in Content Processors](#built-in-content-processors)
@@ -47,7 +47,7 @@ Beifong manages your trusted articles and social media platform sources. It gene
   - [Remote Access Solutions](#remote-access-solutions)
   - [Security](#security)
 - [Cloud Options](#cloud-options)
-  - [Beifong Cloud Features](#beifong-cloud-features)
+  - [PodcastAgent Cloud Features](#podcastagent-cloud-features)
 - [Troubleshooting](#troubleshooting)
   - [Kokoro Library Installation Issues](#kokoro-library-installation-issues)
   - [Browseruse Installation Issues](#browseruse-installation-issues)
@@ -59,7 +59,7 @@ Beifong manages your trusted articles and social media platform sources. It gene
 
 ### System Requirements
 
-Before installing Beifong, ensure you have:
+Before installing PodcastAgent, ensure you have:
 
 - Python 3.11+
 - Redis Server
@@ -83,15 +83,15 @@ pip install -r requirements.txt
 python -m playwright install
 
 # (Optional but recommended) Download demo content
-# Navigate to the beifong directory if not already there
-cd beifong  # Skip if already in the beifong folder
+# Navigate to the backend directory if not already there
+cd backend  # Skip if already in the backend folder
 # This populates the system with sample data, curated source feeds, and assets
 python bootstrap_demo.py
 ```
 
 ### Environment Configuration
 
-Create a `.env` file in the `/beifong` directory with your API keys:
+Create a `.env` file in the `/backend` directory with your API keys:
 
 ```
 OPENAI_API_KEY=your_openai_api_key
@@ -113,15 +113,15 @@ source venv/bin/activate
 
 ```bash
 # Terminal 1: Start the main backend (first time run may take 2 to 3 minutes due to the setup process)
-cd beifong
+cd backend
 python main.py
 
 # Terminal 2: Start the scheduler
-cd beifong
+cd backend
 python -m scheduler
 
 # Terminal 3: Start the chat workers
-cd beifong
+cd backend
 python -m celery_worker
 
 # Verify Redis is running
@@ -141,11 +141,11 @@ npm install
 npm start
 ```
 
-## How to Use Beifong
+## How to Use PodcastAgent
 
 ### Three Usage Methods
 
-Beifong offers flexibility in how you interact with the system:
+PodcastAgent offers flexibility in how you interact with the system:
 
 1. **Interactive Web UI** - Web interface for content management and podcast generation
 2. **API Integration** - Programmatic access for custom applications and workflows
@@ -155,7 +155,7 @@ Beifong offers flexibility in how you interact with the system:
 
 ### Built-in Content Processors
 
-Beifong includes several specialized processors for different content sources:
+PodcastAgent includes several specialized processors for different content sources:
 
 - **RSS Feed Processor** - Monitors RSS feeds for new articles and content
 - **URL Content Processor** - Extracts and processes content from web pages
@@ -168,7 +168,7 @@ Beifong includes several specialized processors for different content sources:
 
 ### Creating Custom Content Processors
 
-Extend Beifong's capabilities by adding your own content processors:
+Extend PodcastAgent's capabilities by adding your own content processors:
 
 #### Step 1: Create Your Processor Module
 
@@ -212,7 +212,7 @@ Create a new task using the API or UI with your custom processor type.
 
 ### Agent Architecture Overview
 
-Beifong's AI system is built on the agno framework and includes:
+PodcastAgent's AI system is built on the agno framework and includes:
 
 - **Search Tools** - Semantic search, keyword search, and browser-based web research
 - **Content Generation Tools** - Automated script writing, banner creation, and audio production
@@ -255,7 +255,7 @@ Modify the agent's instructions and behavior in `db/agent_config_v2.py`:
 
 ## Web Search and Browser Automation
 
-Beifong's search agent has full browser automation capabilities through the [browseruse](https://browser-use.com/) library, enabling web research and automated data collection from any website.
+PodcastAgent's search agent has full browser automation capabilities through the [browseruse](https://browser-use.com/) library, enabling web research and automated data collection from any website.
 
 ### Search Commands
 
@@ -273,13 +273,13 @@ For websites requiring authentication (X.com, Facebook, LinkedIn, etc.), you nee
 
 **Setting Up Social Media Sessions:**
 
-1. **Navigate to Social Tab** in the Beifong web interface
+1. **Navigate to Social Tab** in the PodcastAgent web interface
 2. **Click "Setup Session"** under the Setup section
 3. **Login Process** - A browser window will open where you:
    - Log into your social media accounts normally
    - Complete any verification steps
    - Close the browser when finished
-4. **Session Persistence** - Beifong will use these authenticated sessions for future automated searches
+4. **Session Persistence** - PodcastAgent will use these authenticated sessions for future automated searches
 
 ### Advanced Persistent Session Configuration
 
@@ -304,7 +304,7 @@ For persistent logged in sessions and advanced browser management:
 
 ### Supported Platforms
 
-Beifong currently supports automated monitoring for:
+PodcastAgent currently supports automated monitoring for:
 
 - **X.com (Twitter)** - Collects and analyzes your social media feeds
 - **Facebook.com** - Monitors your Facebook timeline and interactions
@@ -313,7 +313,7 @@ Beifong currently supports automated monitoring for:
 
 To automatically collect your social media feeds:
 
-1. **Navigate to the Voyager Tab** in the Beifong web interface
+1. **Navigate to the Voyager Tab** in the PodcastAgent web interface
 2. **Create a Scheduled Task** for social media monitoring
 3. **Configure Collection Frequency** - Set how often you want feeds collected
 4. **Select Platform** - Choose between X.com or Facebook.com processors
@@ -347,7 +347,7 @@ You can easily customize which feeds to monitor:
 
 ### Adding New Social Media Accounts
 
-Beifong supports easy expansion to additional platforms:
+PodcastAgent supports easy expansion to additional platforms:
 
 **Currently Supported:**
 - X.com (Twitter)
@@ -385,7 +385,7 @@ Beifong supports easy expansion to additional platforms:
 
 ### Supported TTS Engines
 
-Beifong supports multiple text to speech options:
+PodcastAgent supports multiple text to speech options:
 
 **Commercial Options:**
 - **OpenAI TTS** 
@@ -407,24 +407,24 @@ Add custom TTS engines through the tts_selector engine interface in the **utils*
 
 ## Integrations
 
-Beifong can be integrated with other platforms.
+PodcastAgent can be integrated with other platforms.
 
 ### Slack Integration
 
-Beifong's Slack integration enables you to interact with the AI agent directly from your Slack workspace. Each conversation with Beifong creates a dedicated Slack thread for the session.
+PodcastAgent's Slack integration enables you to interact with the AI agent directly from your Slack workspace. Each conversation with PodcastAgent creates a dedicated Slack thread for the session.
 
 **Key Feature:**
-- Direct messaging with BeifongAI in Slack channels
+- Direct messaging with PodcastAgent in Slack channels
 
 ### Setting Up Slack App
 
-To integrate Beifong with your Slack workspace, you need to create a Slack app in Socket Mode:
+To integrate PodcastAgent with your Slack workspace, you need to create a Slack app in Socket Mode:
 
 #### Step 1: Create Slack App
 
 1. Visit [Slack API Apps](https://api.slack.com/apps) and click "Create New App"
 2. Choose "From scratch" and provide:
-   - **App Name**: BeifongAI (or your preferred name)
+   - **App Name**: PodcastAgent (or your preferred name)
    - **Workspace**: Select your target Slack workspace
 3. **Enable Socket Mode**:
    - Navigate to "Socket Mode" in the left sidebar
@@ -447,20 +447,20 @@ To integrate Beifong with your Slack workspace, you need to create a Slack app i
 
 ### Required Slack Permissions
 
-Your Slack app requires specific permissions to function properly with Beifong:
+Your Slack app requires specific permissions to function properly with PodcastAgent:
 
 #### OAuth & Permissions - Bot Token Scopes
 
 Add the following scopes under "OAuth & Permissions" → "Bot Token Scopes":
 
-- **`app_mentions:read`** - View messages that directly mention @BeifongAI in conversations that the app is in
-- **`assistant:write`** - Allow BeifongAI to act as an App Agent
-- **`channels:history`** - View messages and other content in public channels that BeifongAI has been added to
+- **`app_mentions:read`** - View messages that directly mention @PodcastAgent in conversations that the app is in
+- **`assistant:write`** - Allow PodcastAgent to act as an App Agent
+- **`channels:history`** - View messages and other content in public channels that PodcastAgent has been added to
 - **`channels:read`** - View basic information about public channels in a workspace
-- **`chat:write`** - Send messages as @BeifongAI
-- **`files:read`** - View files shared in channels and conversations that BeifongAI has been added to
-- **`files:write`** - Upload, edit, and delete files as @BeifongAI
-- **`im:read`** - View basic information about direct messages that BeifongAI has been added to
+- **`chat:write`** - Send messages as @PodcastAgent
+- **`files:read`** - View files shared in channels and conversations that PodcastAgent has been added to
+- **`files:write`** - Upload, edit, and delete files as @PodcastAgent
+- **`im:read`** - View basic information about direct messages that PodcastAgent has been added to
 - **`im:write`** - Start direct messages with people
 
 #### Event Subscriptions - Bot Events
@@ -474,7 +474,7 @@ Under "Event Subscriptions" → "Subscribe to bot events", add:
 
 ### Environment Configuration
 
-Add your Slack tokens to the `.env` file in the `/beifong` directory:
+Add your Slack tokens to the `.env` file in the `/backend` directory:
 
 ```env
 # Existing environment variables...
@@ -498,14 +498,14 @@ Once you've configured your Slack app and environment variables:
 #### Step 1: Install App in Workspace
 
 1. Ensure your Slack app is installed in your workspace
-2. Add BeifongAI to the channels where you want to use it
-3. You can also send direct messages to BeifongAI
+2. Add PodcastAgent to the channels where you want to use it
+3. You can also send direct messages to PodcastAgent
 
 #### Step 2: Start Slack Integration
 
 ```bash
-# Navigate to beifong directory
-cd beifong
+# Navigate to backend directory
+cd backend
 
 # Ensure your environment is activated
 source venv/bin/activate
@@ -514,12 +514,12 @@ source venv/bin/activate
 python -m integrations.slack.chat
 ```
 
-#### Step 3: Interact with BeifongAI
+#### Step 3: Interact with PodcastAgent
 
 **In Slack Channels:**
-- Mention @BeifongAI to start a conversation
+- Mention @PodcastAgent to start a conversation
 - Each mention creates a new thread for context continuity
-- Example: `@BeifongAI Can you help me analyze the latest news about AI developments?`
+- Example: `@PodcastAgent Can you help me analyze the latest news about AI developments?`
 
 **Reference Documentation:**
 - [Slack Socket Mode API](https://api.slack.com/apis/socket-mode)
@@ -559,7 +559,7 @@ If asset storage grows, consider these storage optimization strategies:
 
 ```bash
 # Start the backend with network access
-cd beifong
+cd backend
 python main.py --host 0.0.0.0 --port 7000
 ```
 
@@ -567,7 +567,7 @@ This makes the application accessible via your machine's IP address on your loca
 
 ### Remote Access Solutions
 
-For accessing Beifong from outside your local network (workaround):
+For accessing PodcastAgent from outside your local network (workaround):
 
 #### SSH Port Forwarding
 ```bash
@@ -584,14 +584,14 @@ Provides a temporary public URL that forwards to your local instance.
 
 ### Security
 
-Beifong doesn't include an authentication layer yet. Authentication will be added in the next version.
+PodcastAgent doesn't include an authentication layer yet. Authentication will be added in the next version.
 
 ## Cloud Options
 
-### Beifong Cloud Features
+### PodcastAgent Cloud Features
 Coming Soon!
 
-✅ Cloud version of Beifong
+✅ Cloud version of PodcastAgent
 
 ✅ More social media connectors
 
@@ -627,7 +627,7 @@ For reference, check the FAISS documentation.
 
 ### Browser-Based Data Collection Issues
 
-Some of the data collection features rely on browser automation, which sometimes won't work properly in server environments. While Beifong will still function, some browser dependent features may not work in server environments without proper browser setup.
+Some of the data collection features rely on browser automation, which sometimes won't work properly in server environments. While PodcastAgent will still function, some browser dependent features may not work in server environments without proper browser setup.
 
 ## Updates
 

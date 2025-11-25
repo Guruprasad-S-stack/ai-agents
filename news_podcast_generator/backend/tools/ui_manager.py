@@ -1,8 +1,8 @@
 from agno.agent import Agent
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from db.agent_config_v2 import TOGGLE_UI_STATES
 
-load_dotenv()
+load_backend_env()
 
 
 def ui_manager_run(

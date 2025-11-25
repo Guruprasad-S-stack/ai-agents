@@ -1,13 +1,13 @@
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from tools.browser_crawler import create_browser_crawler
 from textwrap import dedent
 import uuid
 
 
-load_dotenv()
+load_backend_env()
 
 
 class ScrapedContent(BaseModel):

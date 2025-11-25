@@ -8,10 +8,10 @@ import aiofiles
 from contextlib import asynccontextmanager
 from routers import article_router, podcast_router, source_router, task_router, podcast_config_router, async_podcast_agent_router, social_media_router
 from services.db_init import init_databases
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 
 
-load_dotenv()
+load_backend_env()
 
 CLIENT_BUILD_PATH = os.environ.get(
     "CLIENT_BUILD_PATH",
@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
     print("Shutdown complete")
 
 
-app = FastAPI(title="Beifong API", description="Beifong API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="PodcastAgent API", description="PodcastAgent API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,8 +1,9 @@
+import os
 from typing import List
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from agno.models.google import Gemini
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from agno.tools.duckduckgo import DuckDuckGoTools
 from textwrap import dedent
 from tools.wikipedia_search import wikipedia_search
@@ -14,7 +15,7 @@ from tools.search_articles import search_articles
 from tools.web_search import run_browser_search
 
 
-load_dotenv()
+load_backend_env()
 
 
 class ReturnItem(BaseModel):
@@ -78,7 +79,7 @@ def search_agent_run(agent: Agent, query: str) -> str:
     session = SessionService.get_session(session_id)
     current_state = session["state"]
     search_agent = Agent(
-        model=OpenAIChat(id="gpt-4o-mini"),
+        model=Gemini(id="gemini-2.5-flash", api_key=os.getenv("GOOGLE_API_KEY")),
         instructions=SEARCH_AGENT_INSTRUCTIONS,
         description=SEARCH_AGENT_DESCRIPTION,
         use_json_mode=True,

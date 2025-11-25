@@ -3,10 +3,10 @@ import redis
 import os
 import time
 import json
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 
 
-load_dotenv()
+load_backend_env()
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
@@ -17,7 +17,7 @@ STALE_LOCK_THRESHOLD_SEC = 60 * 15
 
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB + 1)
 
-app = Celery("beifong_tasks", broker=f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}", backend=f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
+app = Celery("podcast_agent_tasks", broker=f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}", backend=f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
 
 app.conf.update(
     result_expires=60 * 2,

@@ -1,8 +1,8 @@
 from agno.agent import Agent
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from typing import List
 
-load_dotenv()
+load_backend_env()
 
 
 def user_source_selection_run(

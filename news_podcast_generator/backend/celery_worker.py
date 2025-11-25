@@ -4,10 +4,10 @@ worker_options = [
     "worker",
     "--loglevel=INFO",
     "--concurrency=4",
-    "--hostname=beifong_worker@%h",
+    "--hostname=podcast_agent_worker@%h",
     "--pool=threads",
 ]
 
 if __name__ == "__main__":
-    print("Starting Beifong podcast agent workers...")
+    print("Starting PodcastAgent workers...")
     app.worker_main(worker_options)

@@ -4,13 +4,13 @@ from typing import List
 from pydantic import BaseModel, Field
 from browser_use import Agent as BrowserAgent, Controller, BrowserSession, BrowserProfile
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from agno.agent import Agent
 
 
 import json
 
-load_dotenv()
+load_backend_env()
 
 BROWSER_AGENT_MODEL = "gpt-4o"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"

@@ -1,8 +1,8 @@
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
+from agno.models.google import Gemini
 from agno.storage.sqlite import SqliteStorage
 import os
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 from services.celery_app import app, SessionLockedTask
 from db.config import get_agent_session_db_path
 from db.agent_config_v2 import (
@@ -17,11 +17,10 @@ from agents.script_agent import podcast_script_agent_run
 from tools.ui_manager import ui_manager_run
 from tools.user_source_selection import user_source_selection_run
 from tools.session_state_manager import update_language, update_chat_title, mark_session_finished
-from agents.image_generate_agent import image_generation_agent_run
 from agents.audio_generate_agent import audio_generate_agent_run
 import json
 
-load_dotenv()
+load_backend_env()
 
 db_file = get_agent_session_db_path()
 
@@ -37,7 +36,7 @@ def agent_chat(self, session_id, message):
         session_state = SessionService.get_session(session_id).get("state", INITIAL_SESSION_STATE)
 
         _agent = Agent(
-            model=OpenAIChat(id=AGENT_MODEL, api_key=os.getenv("OPENAI_API_KEY")),
+            model=Gemini(id=AGENT_MODEL, api_key=os.getenv("GOOGLE_API_KEY")),
             storage=SqliteStorage(table_name="podcast_sessions", db_file=db_file),
             add_history_to_messages=True,
             read_chat_history=True,
@@ -54,7 +53,6 @@ def agent_chat(self, session_id, message):
                 user_source_selection_run,
                 update_language,
                 podcast_script_agent_run,
-                image_generation_agent_run,
                 audio_generate_agent_run,
                 update_chat_title,
                 mark_session_finished,

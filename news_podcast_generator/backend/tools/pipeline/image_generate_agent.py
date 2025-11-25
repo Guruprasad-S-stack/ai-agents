@@ -3,7 +3,7 @@ from agno.models.openai import OpenAIChat
 from agno.tools.dalle import DalleTools
 from textwrap import dedent
 import json
-from dotenv import load_dotenv
+from utils.env_loader import load_backend_env
 import uuid
 from db.agent_config_v2 import PODCAST_IMG_DIR
 import os
@@ -11,7 +11,7 @@ import requests
 from typing import Any
 
 
-load_dotenv()
+load_backend_env()
 
 IMAGE_GENERATION_AGENT_DESCRIPTION = "You are an AI agent that can generate images using DALL-E."
 IMAGE_GENERATION_AGENT_INSTRUCTIONS = dedent("""
