@@ -65,22 +65,21 @@ PodcastAgent uses a **multi-service architecture** with three main components:
 - **`celery==5.5.2`** - Distributed task queue for async processing
 - **`redis==5.3.0`** - Message broker for Celery + session locking
 
-### **AI/ML:**
-- **`openai==1.74.0`** - OpenAI API client (GPT-4o for agent)
-- **`anthropic==0.49.0`** - Claude API (optional alternative)
-- **`sentence-transformers==4.1.0`** - Embeddings for semantic search
+### **AI/ML / Search:**
+- **`google-generativeai`** - Gemini models (2.5 Pro / 2.5 Flash) for orchestration, extraction
+- **`tavily-python`** - Tavily search API (primary web search tool)
+- **`sentence-transformers==4.1.0`** - Embeddings for semantic search (optional/local)
 - **`faiss-cpu==1.9.0`** - Vector similarity search (optional)
 
 ### **Web Scraping & Browser:**
-- **`browser-use==0.2.4`** - Browser automation (Playwright-based)
-- **`playwright==1.52.0`** - Browser automation engine
-- **`beautifulsoup4==4.13.4`** - HTML parsing
-- **`newspaper4k==0.9.3.1`** - Article extraction
+- **`crawl4ai`** - LLM-powered scraping/extraction (used with Gemini), parallel asyncio
+- **`playwright==1.52.0`** - Browser automation engine (used only if browser_use is enabled)
+- **`beautifulsoup4`**, **`newspaper4k`** - HTML parsing / legacy extraction (fallback)
 
 ### **Text-to-Speech:**
-- **`elevenlabs==1.57.0`** - ElevenLabs TTS API
-- **`kokoro==0.9.4`** - Open-source TTS (optional)
-- **`openai`** - Also provides TTS
+- **`edge-tts`** - Primary TTS (free, parallel, fast)
+- **`elevenlabs==1.57.0`** - Optional TTS
+- **`openai`** - Optional TTS
 
 ### **Database:**
 - **`aiosqlite==0.21.0`** - Async SQLite for databases
@@ -180,16 +179,17 @@ Sub-agents that handle specific tasks:
 - **`scrape_agent.py`** - Scrapes web pages
 - **`script_agent.py`** - Generates podcast scripts
 - **`image_generate_agent.py`** - Creates podcast banners
-- **`audio_generate_agent.py`** - Generates audio from text
+- **`audio_generate_agent.py`** - Generates audio from text (Edge TTS primary; ElevenLabs/OpenAI optional)
 
 ### **`tools/`** - Agent Tools
 Functions the main agent can call:
 
-- **`web_search.py`** - Web search using browser automation
-- **`search_articles.py`** - Search local article database
-- **`wikipedia_search.py`** - Wikipedia search
-- **`user_source_selection.py`** - UI for source selection
-- **`ui_manager.py`** - Manages UI state
+- **`tavily_search.py`** - Primary web search (Tavily API)
+- **Backups**: `google_news_discovery.py`, `wikipedia_search.py`, `DuckDuckGoTools` (via search agent)
+- **`crawl4ai_scraper.py`** - LLM-powered scraping/extraction (parallel)
+- **`web_search.py`** - Browser-use/Playwright (currently disabled by default)
+- **`user_source_selection.py`** - UI tool (auto-select fallback if called without indices)
+- **`ui_manager.py`** - Manages UI state (blocks source selection UI)
 - **`session_state_manager.py`** - Manages session state
 - **`social/`** - Social media scrapers (X.com, Facebook)
 
