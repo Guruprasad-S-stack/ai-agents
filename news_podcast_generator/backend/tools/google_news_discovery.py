@@ -38,16 +38,27 @@ def google_news_discovery_run(
         If both are provided, top_news takes precedence.
     """
     print("Google News Discovery:", keyword)
-    google_news = GNews(
-        language=None,
-        country=None,
-        period=None,
-        max_results=max_results,
-        exclude_websites=[],
-    )
-    if top_news:
-        results = get_top_news(google_news)
-    if keyword:
-        results = search_news(google_news, keyword)
-    print('google news search found:', len(results))
-    return f"for all results is_scrapping_required: True, results: {json.dumps(results)}"
+    try:
+        google_news = GNews(
+            language=None,
+            country=None,
+            period=None,
+            max_results=max_results,
+            exclude_websites=[],
+        )
+        results = []
+        if top_news:
+            results = get_top_news(google_news)
+        elif keyword:
+            results = search_news(google_news, keyword)
+        else:
+            return "Error: Either keyword or top_news must be provided."
+        
+        if not results:
+            return "No Google News results found for this query. Try other search tools."
+        
+        print('google news search found:', len(results))
+        return f"for all results is_scrapping_required: True, results: {json.dumps(results)}"
+    except Exception as e:
+        print(f"Error during Google News search: {str(e)}")
+        return f"Error in Google News search: {str(e)}. Try other search tools like browser_search or embedding_search."

@@ -737,7 +737,7 @@ const PodcastSession = () => {
                         ></span>
                         <span>
                            {isProcessing
-                              ? `Processing ${processingType || ''}...`
+                              ? `🎙️ ${processingType || 'Working'}... (3-5 min)`
                               : `Stage: ${currentStage}`}
                         </span>
                      </div>
@@ -756,7 +756,7 @@ const PodcastSession = () => {
                      ></span>
                      <span>
                         {isProcessing
-                           ? `Processing ${processingType || ''}...`
+                           ? `🎙️ ${processingType || 'Working'}... (3-5 min)`
                            : `Stage: ${currentStage}`}
                      </span>
                   </div>
@@ -818,8 +818,8 @@ const PodcastSession = () => {
                                  </div>
                                  <span>
                                     {processingType
-                                       ? `Processing ${processingType}...`
-                                       : 'Processing request...'}
+                                       ? `🎙️ ${processingType} in progress... (3-5 min total)`
+                                       : '🎙️ Working on your podcast...'}
                                     {currentTaskId && (
                                        <span className="ml-1 text-xs opacity-60">
                                           (Task: {currentTaskId.substring(0, 8)})
@@ -922,7 +922,7 @@ const PodcastSession = () => {
                                     }}
                                     placeholder={
                                        isProcessing || loading
-                                          ? `Processing ${processingType || 'request'}...`
+                                          ? `🎙️ ${processingType || 'Creating podcast'}... (3-5 min)`
                                           : 'Type your message...'
                                     }
                                     disabled={isProcessing || loading}
@@ -987,7 +987,7 @@ const PodcastSession = () => {
                               <div className="mt-1.5 px-1 flex justify-between items-center">
                                  <span className="text-xs text-gray-500">
                                     {isProcessing
-                                       ? 'Processing... Please wait'
+                                       ? '🎙️ Creating magic... Almost there!'
                                        : 'Ask about your podcast or give instructions'}
                                  </span>
                                  <button

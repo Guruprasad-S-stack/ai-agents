@@ -63,3 +63,20 @@ celerybeat.pid
 # Redis
 dump.rdb
 
+# Credentials and secrets
+credentials.json
+*.json.json
+
+# Large audio/video files
+*.wav
+*.mp3
+*.webm
+podcasts/audio/
+podcasts/recordings/
+browsers/
+
+# Test output files
+tests/*.mp3
+tests/*.wav
+tests/*.webm
+

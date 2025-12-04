@@ -324,7 +324,7 @@ const ChatMessage = ({ message, role }) => {
 };
 
 export const LoadingIndicator = () => {
-   const message = 'The agent is working. Please wait this may take a while...';
+   const message = '🎙️ Creating your podcast! Expected time: 3-5 mins. Hold tight for an engaging conversation...';
    return (
       <div className="my-2">
          <div className="bg-gray-900/60 backdrop-blur-md rounded-lg p-3 flex items-center relative overflow-hidden border border-white/10 shadow-lg">

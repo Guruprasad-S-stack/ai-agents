@@ -3,7 +3,13 @@ from agno.agent import Agent
 from agno.models.google import Gemini
 from pydantic import BaseModel, Field
 from utils.env_loader import load_backend_env
-from tools.browser_crawler import create_browser_crawler
+# Use Crawl4AI for modern scraping (fallback to browser_crawler if not available)
+try:
+    from tools.crawl4ai_scraper import create_crawl4ai_scraper
+    USE_CRAWL4AI = True
+except ImportError:
+    from tools.browser_crawler import create_browser_crawler
+    USE_CRAWL4AI = False
 from textwrap import dedent
 
 
@@ -49,6 +55,8 @@ SCRAPE_AGENT_INSTRUCTIONS = dedent("""
 def crawl_urls_batch(search_results):
     url_to_search_results = {}
     unique_urls = []
+    MAX_URLS_TO_SCRAPE = 5  # Hard limit for fast processing
+    
     for search_result in search_results:
         if not search_result.get("url", False):
             continue
@@ -58,11 +66,22 @@ def crawl_urls_batch(search_results):
             search_result['original_url'] = search_result['url']
         url = search_result["url"]
         if url not in url_to_search_results:
+            # Safety check: Don't exceed max URLs
+            if len(unique_urls) >= MAX_URLS_TO_SCRAPE:
+                print(f"⚠️ Limiting scraping to {MAX_URLS_TO_SCRAPE} URLs (fast processing mode)", flush=True)
+                break
             url_to_search_results[url] = []
             unique_urls.append(url)
         url_to_search_results[url].append(search_result)
-    browser_crawler = create_browser_crawler()
-    scraped_results = browser_crawler.scrape_urls(unique_urls)
+    
+    print(f"📊 Scraping {len(unique_urls)} unique URLs (max limit: {MAX_URLS_TO_SCRAPE})", flush=True)
+    # Use Crawl4AI if available, otherwise fallback to browser_crawler
+    if USE_CRAWL4AI:
+        scraper = create_crawl4ai_scraper()
+        scraped_results = scraper.scrape_urls(unique_urls)
+    else:
+        browser_crawler = create_browser_crawler()
+        scraped_results = browser_crawler.scrape_urls(unique_urls)
     url_to_scraped = {result["original_url"]: result for result in scraped_results}
     updated_search_results = []
     successful_scrapes = 0
@@ -129,21 +148,33 @@ def scrape_agent_run(
 ) -> str:
     """
     Scrape Agent that takes the search_results (internaly from search_results) and scrapes each URL for full content, making sure those contents are of high quality and relevant to the topic.
+    
+    AUTO-CONFIRMS all sources after scraping (no user selection needed).
+    
     Args:
         agent: The agent instance
         query: The search query
     Returns:
         Response status
     """
-    print("Scrape Agent Input:", query)
+    print("🔍 Scrape Agent Input:", query, flush=True)
     session_id = agent.session_id
     from services.internal_session_service import SessionService
 
     session = SessionService.get_session(session_id)
     current_state = session["state"]
-    updated_results, _, _ = crawl_urls_batch(current_state["search_results"])
+    updated_results, successful, failed = crawl_urls_batch(current_state["search_results"])
     verified_results = verify_content_with_agent(agent, query, updated_results, use_agent=False)
+    
+    # AUTO-CONFIRM all sources (skip user selection for fast processing)
+    for result in verified_results:
+        result["confirmed"] = True
+    
     current_state["search_results"] = verified_results
+    current_state["sources_auto_confirmed"] = True  # Flag for orchestrator
     SessionService.save_session(session_id, current_state)
-    has_results = "search_results" in current_state and current_state["search_results"]
-    return f"Scraped {len(current_state['search_results'])} sources with full content relevant to '{query}'{' and updated the full text and published date in the search_results items' if has_results else ''}."
+    
+    confirmed_count = len(verified_results)
+    print(f"✅ Scraped and AUTO-CONFIRMED {confirmed_count} sources (successful: {successful}, failed: {failed})", flush=True)
+    
+    return f"Scraped and auto-confirmed {confirmed_count} sources for '{query}'. All sources are ready for script generation - proceed directly to podcast_script_agent_run."

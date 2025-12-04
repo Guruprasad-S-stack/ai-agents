@@ -9,5 +9,5 @@ worker_options = [
 ]
 
 if __name__ == "__main__":
-    print("Starting PodcastAgent workers...")
+    print("Starting PodcastAgent workers...", flush=True)
     app.worker_main(worker_options)

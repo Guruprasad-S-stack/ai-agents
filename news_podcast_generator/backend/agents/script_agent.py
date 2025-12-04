@@ -31,33 +31,43 @@ class PodcastScript(BaseModel):
 
 PODCAST_AGENT_DESCRIPTION = "You are a helpful assistant that can generate engaging podcast scripts for the given sources."
 PODCAST_AGENT_INSTRUCTIONS = dedent("""
-    You are a helpful assistant that can generate engaging podcast scripts for the given source content and query.
-    For given content, create an engaging podcast script that should be at least 15 minutes worth of content and your allowed enhance the script beyond given sources if you know something additional info will be interesting to the discussion or not enough conents available.
-    You use the provided sources to ground your podcast script generation process. Keep it engaging and interesting.
+    You are a helpful assistant that generates engaging, CONVERSATIONAL podcast scripts between two hosts discussing the given content.
     
-    IMPORTANT: Generate the entire script in the provided language. basically only text field needs to be in requested language,
+    CRITICAL CONVERSATION RULES:
+    - This is a DIALOGUE, not speeches. Alex and Morgan should have a natural back-and-forth conversation.
+    - EACH DIALOG TURN MUST BE SHORT: Maximum 2-3 sentences per speaker before the other responds.
+    - Speakers should frequently react to each other: "That's a great point, Morgan..." or "Exactly, Alex, and..."
+    - Include natural interruptions, agreements, questions, and follow-ups between speakers.
+    - Avoid long monologues - if a speaker needs to explain something complex, break it into multiple short turns with the other host asking clarifying questions or adding comments.
     
-    CONTENT GUIDELINES [THIS IS EXAMPLE YOU CAN CHANGE THE GUIDELINES ANYWAY BASED ON THE QUERY OR TOPIC DISCUSSED]:
-    - Provide insightful analysis that helps the audience understand the significance
-    - Include discussions on potential implications and broader context of each story
-    - Explain complex concepts in an accessible but thorough manner
-    - Make connections between current and relevant historical developments when applicable
-    - Provide comparisons and contrasts with similar stories or trends when relevant
+    CONVERSATION FLOW EXAMPLES:
+    - ALEX: "So the big news this week is about agentic AI."
+    - MORGAN: "Right, and what's fascinating is how quickly it's evolving."
+    - ALEX: "Exactly. Companies like AWS are now offering dedicated tools for it."
+    - MORGAN: "That's huge. What does that mean for developers?"
     
-    PERSONALITY NOTES [THIS IS EXAMPLE YOU CAN CHANGE THE PERSONALITY OF ALEX AND MORGAN ANYWAY BASED ON THE QUERY OR TOPIC DISCUSSED]:
-    - Alex is more analytical and fact-focused
-    * Should reference specific details and data points
-    * Should explain complex topics clearly
-    * Should identify key implications of stories
-    - Morgan is more focused on human impact, social context, and practical applications
-    * Should analyze broader implications
-    * Should consider ethical implications and real-world applications
-    - Include natural, conversational banter and smooth transitions between topics
-    - Each article discussion should go beyond the basic summary to provide valuable insights
-    - Maintain a conversational but informed tone that would appeal to a general audience
+    NOT LIKE THIS (too speech-like):
+    - ALEX: "Today we're going to discuss agentic AI. This is a major development in the field. Companies are investing billions. AWS has launched new tools. Microsoft is also competing. The implications are vast..." (TOO LONG!)
     
-    IMPORTNAT:
-        - MAKE SURE PODCAST SCRIPS ARE AT LEAST 15 MINUTES LONG WHICH MEANS YOU NEED TO HAVE DETAILED DISCUSSIONS OFFCOURSE KEEP IT INTERESTING AND ENGAGING.
+    PERSONALITY NOTES:
+    - Alex is more analytical and fact-focused (references data, explains technical concepts)
+    - Morgan is more focused on human impact and practical applications (asks "what does this mean for people?")
+    - They should BUILD on each other's points, not just take turns giving speeches
+    - Include moments of genuine curiosity, surprise, or humor
+    
+    CONTENT GUIDELINES:
+    - Cover the key points from the sources through natural discussion
+    - Make complex topics accessible through the Q&A dynamic between hosts
+    - Total script should be 15+ minutes of natural conversation
+    
+    ACCESSIBILITY - CRITICAL:
+    - This podcast is for a GENERAL AUDIENCE, not experts
+    - Explain technical/scientific terms in simple language
+    - When encountering jargon, have one host ask "What does that mean?" and the other explain simply
+    - Use analogies and everyday examples to make complex concepts relatable
+    - Even if sources are academic/research papers, the podcast should feel like friends explaining cool stuff
+    
+    IMPORTANT: Generate the entire script in the provided language (only the text field needs translation).
     """)
 
 
@@ -107,7 +117,7 @@ def podcast_script_agent_run(
     session = SessionService.get_session(session_id)
     session_state = session["state"]
     
-    print("Podcast Script Agent Input:", query)
+    print("Podcast Script Agent Input:", query, flush=True)
     content_texts, sources = format_search_results_for_podcast(session_state.get("search_results", []))
     if not content_texts:
         return "No confirmed sources found to generate podcast script."
@@ -129,8 +139,16 @@ def podcast_script_agent_run(
     response_dict["sources"] = sources
     session_state["generated_script"] = response_dict
     session_state['stage'] = 'script'
+    
+    # Skip confirmation - proceed directly to audio
+    session_state["show_script_for_confirmation"] = False
+    session_state["show_sources_for_selection"] = False
+    
     SessionService.save_session(session_id, session_state)
+    print(f"✅ Script generated with {len(response_dict.get('sections', []))} sections. Proceeding to audio generation.", flush=True)
 
     if not session_state["generated_script"] and not session_state["generated_script"].get("sections"):
         return "Failed to generate podcast script."
-    return f"Generated podcast script for '{query}' with {len(sources)} confirmed sources."
+    
+    # Proceed directly to audio generation (no confirmation needed)
+    return f"Generated podcast script for '{query}' with {len(sources)} sources. Script is ready. IMMEDIATELY call audio_generate_agent_run to generate the podcast audio."

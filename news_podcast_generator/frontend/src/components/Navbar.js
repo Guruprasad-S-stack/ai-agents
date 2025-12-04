@@ -19,21 +19,20 @@ const Navbar = () => {
          <div className="container mx-auto px-4 relative z-10">
             <div className="flex justify-between items-center h-16">
                <div className="flex-shrink-0 flex items-center">
-                  <div className="relative mr-2 group">
-                     <span
-                        className="text-2xl filter drop-shadow-lg"
+                  <div className="relative mr-3 group">
+                     <img
+                        src="/software-agent.png"
+                        alt="PodcastAgent"
+                        className="w-12 h-12 object-contain filter drop-shadow-lg"
                         style={{
-                           textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
-                           fontSize: '1.75rem',
+                           filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.5))',
                         }}
-                     >
-                        🦉
-                     </span>
+                     />
                      <span className="absolute -inset-1 bg-emerald-500 rounded-full blur-md opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span>
                   </div>
                   <Link to="/" className="relative group">
                      <span className="text-xl font-bold text-gray-100">
-                        <span className="text-emerald-400">Bei</span>fong
+                        <span className="text-emerald-400">Podcast</span>Agent
                      </span>
                      <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                      <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-emerald-400 blur-sm opacity-70 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>

@@ -17,6 +17,11 @@ PODCAST_MUSIC_FOLDER = os.path.join('static', "musics")
 OPENAI_VOICES = {1: "alloy", 2: "echo", 3: "fable", 4: "onyx", 5: "nova", 6: "shimmer"}
 DEFAULT_VOICE_MAP = {1: "alloy", 2: "nova"}
 ELEVENLABS_VOICE_MAP = {1: "Rachel", 2: "Adam"}
+# Edge TTS voices - high quality, FREE, unlimited
+EDGE_TTS_VOICE_MAP = {
+    1: "en-US-GuyNeural",      # Alex (male, natural)
+    2: "en-US-JennyNeural"     # Morgan (female, natural)
+}
 TTS_MODEL = "gpt-4o-mini-tts"
 INTRO_MUSIC_FILE = os.path.join(PODCAST_MUSIC_FOLDER, "intro_audio.mp3")
 OUTRO_MUSIC_FILE = os.path.join(PODCAST_MUSIC_FOLDER, "intro_audio.mp3")
@@ -29,6 +34,209 @@ def resample_audio_scipy(audio, original_sr, target_sr):
     num_samples = int(len(audio) * resampling_ratio)
     resampled = signal.resample(audio, num_samples)
     return resampled
+
+
+async def create_podcast_edge_tts_parallel(
+    script_entries: List[Dict],
+    output_path: str,
+    voice_map: Dict[int, str] = None,
+) -> Optional[str]:
+    """
+    Generate podcast audio using Edge TTS with PARALLEL processing.
+    FREE, unlimited, and 2x faster than sequential!
+    
+    Args:
+        script_entries: List of {"text": str, "speaker": int} dicts
+        output_path: Path to save the final audio file
+        voice_map: Map of speaker_id to Edge TTS voice name
+    
+    Returns:
+        Path to generated audio file, or None on failure
+    """
+    import time
+    import shutil
+    start_time = time.time()
+    
+    # CRITICAL: Configure FFmpeg BEFORE importing pydub!
+    # Pydub checks for ffmpeg at import time and caches the result.
+    ffmpeg_path = shutil.which("ffmpeg")
+    
+    if not ffmpeg_path:
+        # WinGet installs FFmpeg here
+        winget_packages = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WinGet", "Packages")
+        if os.path.exists(winget_packages):
+            for folder in os.listdir(winget_packages):
+                if "FFmpeg" in folder:
+                    bin_path = os.path.join(winget_packages, folder)
+                    # Find the bin folder with ffmpeg.exe
+                    for root, dirs, files in os.walk(bin_path):
+                        if "ffmpeg.exe" in files:
+                            ffmpeg_path = os.path.join(root, "ffmpeg.exe")
+                            break
+                    if ffmpeg_path:
+                        break
+    
+    if not ffmpeg_path:
+        print("❌ FFmpeg not found! Install: winget install FFmpeg", flush=True)
+        return None
+    
+    # Add FFmpeg to PATH BEFORE importing pydub
+    ffmpeg_dir = os.path.dirname(ffmpeg_path)
+    current_path = os.environ.get("PATH", "")
+    if ffmpeg_dir not in current_path:
+        os.environ["PATH"] = f"{ffmpeg_dir};{current_path}"
+        print(f"✅ Added FFmpeg to PATH: {ffmpeg_dir}", flush=True)
+    
+    # NOW import pydub (after FFmpeg is in PATH)
+    try:
+        import edge_tts
+        import asyncio
+        from pydub import AudioSegment
+    except ImportError as e:
+        print(f"Edge TTS dependencies missing: {e}. Install with: pip install edge-tts pydub", flush=True)
+        return None
+    
+    # Configure pydub with explicit paths
+    AudioSegment.converter = ffmpeg_path
+    AudioSegment.ffprobe = ffmpeg_path.replace("ffmpeg.exe", "ffprobe.exe")
+    print(f"✅ FFmpeg configured: {ffmpeg_path}", flush=True)
+    
+    voice_map = voice_map or EDGE_TTS_VOICE_MAP
+    
+    print(f"🎙️ Starting Edge TTS PARALLEL generation for {len(script_entries)} segments...", flush=True)
+    
+    # Create temp directory for individual segments
+    temp_dir = tempfile.mkdtemp(prefix="edge_tts_")
+    print(f"📁 Temp directory: {temp_dir}", flush=True)
+    temp_files = []
+    
+    async def generate_segment(entry: Dict, index: int) -> Optional[str]:
+        """Generate a single TTS segment using stream() for reliability."""
+        text = entry.get("text", "").strip()
+        speaker_id = entry.get("speaker", 1)
+        
+        if not text:
+            return None
+        
+        voice = voice_map.get(speaker_id, "en-US-GuyNeural")
+        temp_file = os.path.join(temp_dir, f"segment_{index:04d}.mp3")
+        
+        try:
+            communicate = edge_tts.Communicate(text, voice)
+            
+            # Use stream() instead of save() for more reliable file writing
+            with open(temp_file, "wb") as f:
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        f.write(chunk["data"])
+            
+            # Verify file was actually created
+            if os.path.exists(temp_file) and os.path.getsize(temp_file) > 0:
+                return temp_file
+            else:
+                print(f"  ✗ Segment {index}: File empty or not created", flush=True)
+                return None
+        except Exception as e:
+            print(f"  ✗ Segment {index} failed: {e}", flush=True)
+            return None
+    
+    try:
+        # Generate all segments in PARALLEL
+        tasks = [generate_segment(entry, i) for i, entry in enumerate(script_entries)]
+        temp_files = await asyncio.gather(*tasks)
+        
+        tts_time = time.time() - start_time
+        success_count = sum(1 for f in temp_files if f)
+        print(f"✅ TTS generation complete: {success_count}/{len(script_entries)} in {tts_time:.1f}s", flush=True)
+        
+        # Debug: Check what's actually in the temp directory
+        if os.path.exists(temp_dir):
+            actual_files = os.listdir(temp_dir)
+            print(f"📁 Temp dir contains {len(actual_files)} files: {actual_files[:5]}...", flush=True)
+        else:
+            print(f"❌ Temp directory doesn't exist: {temp_dir}", flush=True)
+        
+        # Combine audio segments (must be sequential to maintain order)
+        print("🔗 Combining audio segments...", flush=True)
+        combine_start = time.time()
+        
+        # CRITICAL: Re-verify FFmpeg is configured for pydub before combining
+        print(f"🔧 Verifying pydub FFmpeg config:", flush=True)
+        print(f"   AudioSegment.converter = {AudioSegment.converter}", flush=True)
+        print(f"   AudioSegment.ffprobe = {AudioSegment.ffprobe}", flush=True)
+        
+        # Double-check first file exists
+        if temp_files and temp_files[0]:
+            test_file = temp_files[0]
+            print(f"🔍 Testing first file: {test_file}", flush=True)
+            print(f"   Exists: {os.path.exists(test_file)}", flush=True)
+            if os.path.exists(test_file):
+                print(f"   Size: {os.path.getsize(test_file)} bytes", flush=True)
+                
+                # Direct FFmpeg test
+                import subprocess
+                try:
+                    result = subprocess.run(
+                        [ffmpeg_path, "-version"],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    print(f"   FFmpeg runs: {result.returncode == 0}", flush=True)
+                except Exception as ffmpeg_err:
+                    print(f"   FFmpeg test failed: {ffmpeg_err}", flush=True)
+        
+        combined = AudioSegment.empty()
+        silence = AudioSegment.silent(duration=500)  # 500ms pause between segments
+        
+        for i, temp_file in enumerate(temp_files):
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    segment = AudioSegment.from_mp3(temp_file)
+                    if len(combined) > 0:
+                        combined += silence
+                    combined += segment
+                except Exception as e:
+                    print(f"  ⚠️ Could not load segment {i}: {e}", flush=True)
+        
+        if len(combined) == 0:
+            print("❌ No audio segments could be combined", flush=True)
+            return None
+        
+        # Export final audio
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        combined.export(output_path, format="mp3")
+        
+        total_time = time.time() - start_time
+        duration_mins = len(combined) / 1000 / 60
+        
+        print(f"✅ Audio saved: {output_path}", flush=True)
+        print(f"📊 Stats: {duration_mins:.1f} min podcast generated in {total_time:.1f}s (FREE!)", flush=True)
+        
+        return output_path
+        
+    finally:
+        # Cleanup temp files
+        import shutil
+        try:
+            shutil.rmtree(temp_dir)
+        except:
+            pass
+
+
+def create_podcast_edge_tts(script_entries: List[Dict], output_path: str, voice_map: Dict[int, str] = None) -> Optional[str]:
+    """Synchronous wrapper for Edge TTS parallel generation."""
+    import asyncio
+    
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import nest_asyncio
+            nest_asyncio.apply()
+    except RuntimeError:
+        pass
+    
+    return asyncio.run(create_podcast_edge_tts_parallel(script_entries, output_path, voice_map))
 
 
 def create_silence_audio(silence_duration: float, sampling_rate: int) -> np.ndarray:
@@ -191,7 +399,7 @@ def create_podcast(
     else:
         entries = script
 
-    print(f"Processing {len(entries)} script entries")
+    print(f"Processing {len(entries)} script entries", flush=True)
     for i, entry in enumerate(entries):
         if hasattr(entry, "speaker"):
             speaker_id = entry.speaker
@@ -199,7 +407,7 @@ def create_podcast(
         else:
             speaker_id = entry["speaker"]
             entry_text = entry["text"]
-        print(f"Processing entry {i + 1}/{len(entries)}: Speaker {speaker_id}")
+        print(f"Processing entry {i + 1}/{len(entries)}: Speaker {speaker_id}", flush=True)
         result = text_to_speech_openai(
             client=client,
             text=entry_text,
@@ -229,7 +437,7 @@ def create_podcast(
     if sampling_rate_detected is None:
         print("Could not determine sample rate")
         return None
-    print(f"Combining {len(generated_segments)} audio segments")
+    print(f"Combining {len(generated_segments)} audio segments", flush=True)
     full_audio = combine_audio_segments(generated_segments, silence_duration, sampling_rate_detected)
     if full_audio.size == 0:
         print("Combined audio is empty")
@@ -266,7 +474,7 @@ def create_podcast(
         print(f"Could not add intro/outro music: {e}")
         print("Continuing without background music")
 
-    print(f"Writing audio to {output_path}")
+    print(f"Writing audio to {output_path}", flush=True)
     try:
         sf.write(output_path, full_audio, sampling_rate_detected)
     except Exception as e:
@@ -296,6 +504,7 @@ def audio_generate_agent_run(agent: Agent) -> str:
     session_id = agent.session_id
     session = SessionService.get_session(session_id)
     session_state = session["state"]
+    
     script_data = session_state.get("generated_script", {})
     if not script_data or (isinstance(script_data, dict) and not script_data.get("sections")):
         error_msg = "Cannot generate audio: No podcast script data found. Please generate a script first."
@@ -329,31 +538,59 @@ def audio_generate_agent_run(agent: Agent) -> str:
             language_code = selected_language.get("code", "en")
             language_name = selected_language.get("name", "English")
 
+            # TTS Engine Priority: edge (free+fast) > elevenlabs > openai
             preferred_engine = session_state.get("tts_engine")
             elevenlabs_api_key = load_api_key("ELEVENLABS_API_KEY")
             openai_api_key = load_api_key("OPENAI_API_KEY")
+            
+            # Check if edge-tts is available
+            edge_tts_available = False
+            try:
+                import edge_tts
+                edge_tts_available = True
+            except ImportError:
+                pass
+            
             if preferred_engine:
                 tts_engine = preferred_engine.lower()
+            elif edge_tts_available:
+                # Edge TTS is FREE and FAST - use it by default!
+                tts_engine = "edge"
             elif elevenlabs_api_key:
                 tts_engine = "elevenlabs"
+            elif openai_api_key:
+                tts_engine = "openai"
             else:
-                tts_engine = "openai"
+                # Fallback to edge even if not explicitly available
+                tts_engine = "edge"
 
+            # Validate engine availability
             if tts_engine == "elevenlabs" and not elevenlabs_api_key:
-                print("ELEVENLABS_API_KEY not found. Falling back to OpenAI TTS.")
-                tts_engine = "openai"
+                print("ELEVENLABS_API_KEY not found. Falling back to Edge TTS.", flush=True)
+                tts_engine = "edge"
 
             if tts_engine == "openai" and not openai_api_key:
-                error_msg = "Cannot generate audio: OpenAI API key not found."
-                print(error_msg)
-                return error_msg
+                print("OPENAI_API_KEY not found. Falling back to Edge TTS.", flush=True)
+                tts_engine = "edge"
 
-            print(f"Generating podcast audio using {tts_engine} TTS engine in {language_name} language")
-            if tts_engine == "elevenlabs":
+            print(f"🎙️ Generating podcast audio using {tts_engine.upper()} TTS engine in {language_name} language", flush=True)
+            
+            # Change output to .mp3 for Edge TTS
+            if tts_engine == "edge":
+                audio_path = audio_path.replace(".wav", ".mp3")
+            
+            if tts_engine == "edge":
+                # Edge TTS - FREE, unlimited, parallel (2x faster!)
+                full_audio_path = create_podcast_edge_tts(
+                    script_entries=script_entries,
+                    output_path=audio_path,
+                    voice_map=EDGE_TTS_VOICE_MAP,
+                )
+            elif tts_engine == "elevenlabs":
                 full_audio_path = create_podcast_elevenlabs(
                     script=script_entries,
                     output_path=audio_path,
-                    language_code=language_code,
+                    lang_code=language_code,
                     voice_map=ELEVENLABS_VOICE_MAP,
                     api_key=elevenlabs_api_key,
                 )
@@ -373,13 +610,15 @@ def audio_generate_agent_run(agent: Agent) -> str:
             session_state["audio_url"] = audio_url
             session_state["show_audio_for_confirmation"] = True
             SessionService.save_session(session_id, session_state)
-            print(f"Successfully generated podcast audio: {full_audio_path}")
-            return f"I've generated the audio for your '{podcast_title}' podcast using {tts_engine.capitalize()} voices in {language_name}. You can listen to it in the player below. What do you think? If it sounds good, click 'Sounds Great!' to complete your podcast."
+            print(f"✅ Successfully generated podcast audio: {full_audio_path}", flush=True)
+            
+            engine_label = "Edge TTS (Free)" if tts_engine == "edge" else tts_engine.capitalize()
+            return f"I have completed your podcast on '{podcast_title}'. The audio has been generated using {engine_label} voices in {language_name}. You can listen to it in the player below. If it sounds good, click 'Sounds Great!' to complete your podcast."
         else:
             error_msg = "Cannot generate audio: Script is not in the expected format."
             print(error_msg)
             return error_msg
     except Exception as e:
         error_msg = f"Error generating podcast audio: {str(e)}"
-        print(error_msg)
+        print(error_msg, flush=True)
         return f"I encountered an error while generating the podcast audio: {str(e)}. Please try again or let me know if you'd like to proceed without audio."

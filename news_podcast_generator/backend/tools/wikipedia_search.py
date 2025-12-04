@@ -29,8 +29,16 @@ def wikipedia_search(agent: Agent, query: str, srlimit: int = 5) -> str:
             "srlimit": srlimit,
             "utf8": 1,
         }
-        search_response = requests.get(search_url, params=search_params)
-        search_data = search_response.json()
+        search_response = requests.get(search_url, params=search_params, timeout=10)
+        # Check HTTP status before parsing JSON
+        if not search_response.ok:
+            print(f"Wikipedia API error: HTTP {search_response.status_code}")
+            return f"Wikipedia API returned error {search_response.status_code}. Try other search tools."
+        try:
+            search_data = search_response.json()
+        except ValueError as e:
+            print(f"Wikipedia JSON parse error: {str(e)}")
+            return f"Wikipedia API returned invalid response. Try other search tools."
         if (
             "query" not in search_data
             or "search" not in search_data["query"]

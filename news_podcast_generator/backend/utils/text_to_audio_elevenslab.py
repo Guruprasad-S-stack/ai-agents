@@ -138,13 +138,11 @@ def create_podcast(
         print("Warning: Using hardcoded API key")
     try:
         client = ElevenLabs(api_key=api_key)
-        try:
-            voices = client.voices.get_all()
-            print(f"API connection successful. Found {len(voices)} available voices.")
-        except Exception as voice_error:
-            print(f"Warning: Could not retrieve voices: {voice_error}")
+        print("ElevenLabs client initialized successfully", flush=True)
+        # Note: Skipping voices.get_all() check - it requires voices_read permission
+        # which may not be available on all API keys. We'll use hardcoded voice names instead.
     except Exception as e:
-        print(f"Fatal Error: Failed to initialize ElevenLabs client: {e}")
+        print(f"Fatal Error: Failed to initialize ElevenLabs client: {e}", flush=True)
         return None
     output_path = os.path.abspath(output_path)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

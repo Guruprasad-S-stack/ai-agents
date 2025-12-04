@@ -22,15 +22,14 @@ const Footer = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                <div className="col-span-3">
                   <div className="flex items-center mb-0">
-                     <span
-                        className="text-2xl filter drop-shadow-lg mr-2"
+                     <img
+                        src="/software-agent.png"
+                        alt="PodcastAgent"
+                        className="w-12 h-12 object-contain filter drop-shadow-lg mr-3"
                         style={{
-                           textShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
-                           fontSize: '1.75rem',
+                           filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.5))',
                         }}
-                     >
-                        🦉
-                     </span>
+                     />
                      <span className="text-xl font-bold text-gray-100">
                         <span className="text-emerald-400">Podcast</span>Agent
                      </span>

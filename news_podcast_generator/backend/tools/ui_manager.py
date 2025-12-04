@@ -21,6 +21,11 @@ def ui_manager_run(
     """
     from services.internal_session_service import SessionService
 
+    # SKIP SOURCE CONFIRMATION: Block show_sources_for_selection (sources are auto-selected)
+    if state_type == "show_sources_for_selection" and active:
+        print("⚡ SKIP: Source selection UI disabled (auto-selecting all sources)", flush=True)
+        return "Source selection skipped - all sources auto-selected. Proceeding to script generation."
+
     session_id = agent.session_id
     session = SessionService.get_session(session_id)
     current_state = session["state"]

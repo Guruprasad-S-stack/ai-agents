@@ -2,8 +2,9 @@ import os
 import asyncio
 from typing import List
 from pydantic import BaseModel, Field
-from browser_use import Agent as BrowserAgent, Controller, BrowserSession, BrowserProfile
-from langchain_openai import ChatOpenAI
+# Lazy import: browser_use is heavy (loads Playwright), only import when needed
+# Using Gemini instead of OpenAI for browser automation
+from langchain_google_genai import ChatGoogleGenerativeAI
 from utils.env_loader import load_backend_env
 from agno.agent import Agent
 
@@ -12,7 +13,7 @@ import json
 
 load_backend_env()
 
-BROWSER_AGENT_MODEL = "gpt-4o"
+BROWSER_AGENT_MODEL = "gemini-2.5-flash"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 MAX_STEPS = 15
 MAX_ACTIONS_PER_STEP = 5
@@ -38,8 +39,14 @@ def run_browser_search(agent: Agent, instruction: str) -> str:
     Returns:
         The results of the browser search
     """
-    print("Browser Search Input:", instruction)
+    print("=" * 80)
+    print("🔍 BROWSER SEARCH STARTED")
+    print(f"📝 Instruction: {instruction[:100]}...")
+    print("=" * 80)
     try:
+        # Lazy import: Only load browser_use when actually needed (it's heavy)
+        from browser_use import Agent as BrowserAgent, Controller, BrowserSession, BrowserProfile
+        
         controller = Controller(output_model=WebSearchResults)
         session_id = agent.session_id
         recordings_dir = os.path.join("podcasts/recordings", session_id)
@@ -62,7 +69,7 @@ def run_browser_search(agent: Agent, instruction: str) -> str:
         browser_agent = BrowserAgent(
             browser_session=browser_session,
             task=instruction,
-            llm=ChatOpenAI(model=BROWSER_AGENT_MODEL, api_key=os.getenv("OPENAI_API_KEY")),
+            llm=ChatGoogleGenerativeAI(model=BROWSER_AGENT_MODEL, google_api_key=os.getenv("GOOGLE_API_KEY")),
             use_vision=False,
             controller=controller,
             max_actions_per_step=MAX_ACTIONS_PER_STEP,
@@ -82,10 +89,16 @@ def run_browser_search(agent: Agent, instruction: str) -> str:
             results_list = [
                 {"title": post.title, "url": post.url, "description": post.content, "is_scrapping_required": False} for post in parsed.results
             ]
+            num_results = len(results_list)
+            print(f"✅ Browser Search SUCCESS: Found {num_results} results with full content (is_scrapping_required: False)")
+            print(f"📊 Browser Search Results: {num_results} items - URLs: {[r['url'] for r in results_list[:3]]}...")
             return f"is_scrapping_required: False, results: {json.dumps(results_list)}"
         else:
+            print("❌ Browser Search FAILED: No results found")
             return "No results found, something went wrong with browser based search."
     except Exception as e:
+        print(f"❌ Browser Search ERROR: {str(e)}")
+        print("=" * 80)
         return f"Error running browser search: {e}"
     finally:
         pass

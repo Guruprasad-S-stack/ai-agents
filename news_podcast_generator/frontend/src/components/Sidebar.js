@@ -372,23 +372,23 @@ const Sidebar = ({ onNewSession, onSessionSelect }) => {
       <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 via-gray-850 to-gray-800">
          <div className="p-3 border-b border-gray-700/30 bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur">
             <Link to="/" className="flex items-center group">
-               <div className="w-8 h-8 relative mr-2 flex-shrink-0">
+               <div className="w-12 h-12 relative mr-3 flex-shrink-0">
                   <div className="absolute inset-0 flex items-center justify-center z-10">
-                     <span
-                        className="text-xl filter transition-transform group-hover:scale-110"
+                     <img
+                        src="/software-agent.png"
+                        alt="PodcastAgent"
+                        className="w-full h-full object-contain filter transition-transform group-hover:scale-110"
                         style={{
-                           textShadow: '0 0 10px rgba(16, 185, 129, 0.6)',
+                           filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.6))',
                         }}
-                     >
-                        🦉
-                     </span>
+                     />
                   </div>
                   <div className="absolute inset-0 bg-emerald-500 opacity-10 rounded-full blur-lg group-hover:opacity-20 transition-opacity"></div>
                   <div className="absolute inset-0 rounded-full border border-gray-700/30 bg-gradient-to-br from-gray-800 to-gray-900"></div>
                </div>
                <div>
                   <h1 className="text-base font-bold text-white leading-tight">
-                     <span className="text-emerald-400">Bei</span>fong
+                     <span className="text-emerald-400">Podcast</span>Agent
                   </h1>
                   <p className="text-xs text-gray-400 leading-tight">AI Podcast Studio</p>
                </div>
